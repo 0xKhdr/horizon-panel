@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on "Keep a Changelog" and follows Semantic Versioning.
 
-- Link to project plan: see `plan.md` for milestones and release goals.
+- Link to project plan: see `PLAN.md` for milestones and release goals.
 - Date format: YYYY-MM-DD
 - Release branching: prepare releases from `main` or a release/* branch.
 
@@ -28,7 +28,7 @@ The format is based on "Keep a Changelog" and follows Semantic Versioning.
 
 ## [1.0.0] - 2025-10-19
 ### Added
-- Project plan updated and finalized to target Laravel 12 and Filament 4. See `plan.md` for the full migration checklist, phased roadmap, QA gates, and next actionable tasks.
+- Project plan updated and finalized to target Laravel 12 and Filament 4. See `PLAN.md` for the full migration checklist, phased roadmap, QA gates, and next actionable tasks.
 
 ### Changed
 - N/A
@@ -74,4 +74,3 @@ git push origin --tags
 ---
 
 _Last updated: 2025-10-19_
-

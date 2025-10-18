@@ -10,7 +10,7 @@ This repository is targeted at modern technologies: Laravel 12 and Filament 4.
 - Generate Horizon supervisor configurations per Redis connection and reload Horizon to apply changes.
 - Health checks, queue statistics, alerts, and RBAC for admin users.
 
-See `plan.md` for the full development plan, milestones, and migration checklist.
+See `PLAN.md` for the full development plan, milestones, and migration checklist.
 
 ## Requirements
 - PHP: >= 8.2 (8.3 recommended)
@@ -120,7 +120,7 @@ php artisan test
 - `php artisan tinker` — interactive console
 
 ## Next steps & pointers
-- Follow `plan.md` to execute the Laravel 12 + Filament 4 migration checklist.
+- Follow `PLAN.md` to execute the Laravel 12 + Filament 4 migration checklist.
 - Consider adding a PR template that reminds contributors to update `CHANGELOG.md`.
 - Optionally add a CI job to validate changelog entries on PRs that modify source files or migrations.
 
@@ -131,4 +131,3 @@ If you'd like, I can now:
 - Add a minimal GitHub Actions workflow to run tests and validate changelog usage.
 
 _Last updated: 2025-10-19_
-
