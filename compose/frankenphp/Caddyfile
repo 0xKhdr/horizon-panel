@@ -1,0 +1,53 @@
+{
+    frankenphp
+}
+
+:80 {
+    root * public
+
+    encode {
+        zstd
+        gzip 6
+    }
+
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy strict-origin-when-cross-origin
+        Cache-Control "public, max-age=31536000" @static
+        Cache-Control "no-cache, no-store, must-revalidate" @dynamic
+        -Server
+    }
+
+    @static {
+        file
+        path *.css *.js *.ico *.png *.jpg *.jpeg *.gif *.svg *.woff *.woff2 *.ttf *.eot *.webp
+    }
+
+    handle @static {
+        header Cache-Control "public, max-age=31536000, immutable"
+        file_server
+    }
+
+    php_server {
+        worker ./public/frankenphp-worker.php
+    }
+
+    log {
+        output stdout
+        format json {
+            time_format "2006-01-02T15:04:05Z07:00"
+        }
+        level INFO
+    }
+
+    handle_errors {
+        respond "Service Unavailable" 503
+    }
+}
+
+# Health check endpoint
+:80/health {
+    respond "OK" 200
+}
