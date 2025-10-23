@@ -3,8 +3,6 @@
 namespace App\Filament\Widgets;
 
 use App\Models\RedisConnection;
-use Filament\Widgets\ChartWidget;
-use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\Widget;
 
 class RedisHealthWidget extends Widget

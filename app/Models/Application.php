@@ -25,7 +25,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Application extends Model
 {
-    use HasFactory, SoftDeletes, LogsActivity;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -51,8 +51,8 @@ class Application extends Model
     public function redisConnections(): BelongsToMany
     {
         return $this->belongsToMany(RedisConnection::class, 'application_redis_connection')
-                    ->withPivot(['is_primary', 'priority', 'is_active', 'last_used_at'])
-                    ->withTimestamps();
+            ->withPivot(['is_primary', 'priority', 'is_active', 'last_used_at'])
+            ->withTimestamps();
     }
 
     /**

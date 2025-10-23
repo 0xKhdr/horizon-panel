@@ -81,8 +81,8 @@ class RedisConnection extends Model
     public function applications(): BelongsToMany
     {
         return $this->belongsToMany(Application::class, 'application_redis_connection')
-                    ->withPivot(['is_primary', 'priority', 'is_active', 'last_used_at'])
-                    ->withTimestamps();
+            ->withPivot(['is_primary', 'priority', 'is_active', 'last_used_at'])
+            ->withTimestamps();
     }
 
     /**
@@ -156,6 +156,7 @@ class RedisConnection extends Model
         try {
             $client = new \Predis\Client($this->getConnectionConfig());
             $client->ping();
+
             return true;
         } catch (\Exception $e) {
             $this->update([
@@ -163,6 +164,7 @@ class RedisConnection extends Model
                 'last_error' => $e->getMessage(),
                 'last_health_check_at' => now(),
             ]);
+
             return false;
         }
     }

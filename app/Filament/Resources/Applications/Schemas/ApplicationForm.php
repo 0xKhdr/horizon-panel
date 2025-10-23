@@ -4,8 +4,8 @@ namespace App\Filament\Resources\Applications\Schemas;
 
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\KeyValue;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Set;
@@ -24,8 +24,7 @@ class ApplicationForm
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
-                            ->afterStateUpdated(fn (string $operation, $state, Set $set) =>
-                                $operation === 'create' ? $set('slug', Str::slug($state)) : null
+                            ->afterStateUpdated(fn (string $operation, $state, Set $set) => $operation === 'create' ? $set('slug', Str::slug($state)) : null
                             ),
 
                         TextInput::make('slug')

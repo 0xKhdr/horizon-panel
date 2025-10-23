@@ -76,18 +76,18 @@ class ApplicationsTable
                             $data['value'] === '0',
                             fn (Builder $query): Builder => $query->doesntHave('redisConnections'),
                         )
-                        ->when(
-                            $data['value'] === '1-5',
-                            fn (Builder $query): Builder => $query->withCount('redisConnections')->having('redis_connections_count', '>=', 1)->having('redis_connections_count', '<=', 5),
-                        )
-                        ->when(
-                            $data['value'] === '6-10',
-                            fn (Builder $query): Builder => $query->withCount('redisConnections')->having('redis_connections_count', '>=', 6)->having('redis_connections_count', '<=', 10),
-                        )
-                        ->when(
-                            $data['value'] === '10+',
-                            fn (Builder $query): Builder => $query->withCount('redisConnections')->having('redis_connections_count', '>=', 11),
-                        );
+                            ->when(
+                                $data['value'] === '1-5',
+                                fn (Builder $query): Builder => $query->withCount('redisConnections')->having('redis_connections_count', '>=', 1)->having('redis_connections_count', '<=', 5),
+                            )
+                            ->when(
+                                $data['value'] === '6-10',
+                                fn (Builder $query): Builder => $query->withCount('redisConnections')->having('redis_connections_count', '>=', 6)->having('redis_connections_count', '<=', 10),
+                            )
+                            ->when(
+                                $data['value'] === '10+',
+                                fn (Builder $query): Builder => $query->withCount('redisConnections')->having('redis_connections_count', '>=', 11),
+                            );
                     }),
             ])
             ->recordActions([

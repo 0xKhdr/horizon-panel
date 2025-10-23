@@ -17,7 +17,6 @@ use Spatie\Activitylog\Models\Activity;
  * @property array|null $properties
  * @property string|null $event
  * @property \Carbon\Carbon|null $created_at
- *
  * @property-read Model|null $subject
  * @property-read Model|null $causer
  */
@@ -48,7 +47,7 @@ class ActivityLog extends Activity
     public function scopeForModel($query, string $modelType, int $modelId): void
     {
         $query->where('subject_type', $modelType)
-              ->where('subject_id', $modelId);
+            ->where('subject_id', $modelId);
     }
 
     /**
@@ -57,7 +56,7 @@ class ActivityLog extends Activity
     public function scopeByUser($query, int $userId): void
     {
         $query->where('causer_type', 'App\\Models\\User')
-              ->where('causer_id', $userId);
+            ->where('causer_id', $userId);
     }
 
     /**

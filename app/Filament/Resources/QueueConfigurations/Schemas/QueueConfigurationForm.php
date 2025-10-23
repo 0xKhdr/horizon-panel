@@ -35,7 +35,7 @@ class QueueConfigurationForm
                             ->label('Redis Connection')
                             ->options(function (callable $get) {
                                 $applicationId = $get('application_id');
-                                if (!$applicationId) {
+                                if (! $applicationId) {
                                     return [];
                                 }
 

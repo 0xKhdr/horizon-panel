@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
@@ -16,7 +15,6 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * @property \Carbon\Carbon|null $last_used_at
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
- *
  * @property-read Application $application
  * @property-read RedisConnection $redisConnection
  */
