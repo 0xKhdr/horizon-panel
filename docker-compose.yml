@@ -19,7 +19,7 @@ services:
       - /app/bootstrap/cache:rw,mode=1777,size=512M
       - /tmp/views:size=256M
     volumes:
-      - ./src:/app:delegated
+      - ./:/app:delegated
       - ./compose/frankenphp/php.ini:/usr/local/etc/php/99-custom.ini:ro
     depends_on:
       mysql:

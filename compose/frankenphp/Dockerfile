@@ -51,7 +51,7 @@ RUN addgroup -g ${GID} appuser && \
 WORKDIR /app
 
 # Copy composer files first for better layer caching
-COPY --chown=${UID}:${GID} src/composer.* ./
+COPY --chown=${UID}:${GID} composer.* ./
 
 # Install dependencies as root to avoid permission issues
 RUN composer install \
@@ -64,7 +64,7 @@ RUN composer install \
     composer clear-cache
 
 # Copy application code
-COPY --chown=${UID}:${GID} src/ ./
+COPY --chown=${UID}:${GID} / ./
 
 # Create necessary directories with proper permissions
 RUN mkdir -p storage/framework/{cache,sessions,views,testing} \
