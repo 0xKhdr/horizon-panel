@@ -1,269 +1,291 @@
-# Laravel Dynamic Redis Horizon Manager - Project Plan (Dev-Ready)
+🚀 Finalized Implementation Plan - Laravel Dynamic Redis Horizon Manager
 
-> Purpose: Manage multiple Redis connections dynamically with Laravel + Horizon and a Filament admin UI.
+🎯 Tech Stack Finalized
 
----
-
-## Summary
-This document is the single source of truth for planning and running development for the project. It is updated to target Laravel 12 and Filament 4 (latest tech). Use this to: plan work, run upgrades, assign tasks, and validate quality gates.
-
-- Framework: Laravel 12
-- Admin UI: Filament 4
-- Queue monitor: Laravel Horizon (compatible release)
-- PHP: >= 8.2 (8.3 recommended)
+· Laravel 12 with modern syntax
+· FrankenPHP (Worker Mode) for high performance
+· PHP 8.4 with property hooks
+· Filament 4 with Livewire 3
+· Redis 7+ & Horizon 5
+· Spatie Permission for RBAC
 
 ---
 
-## Checklist (what this update provides / what we'll enforce)
-- [x] Concrete upgrade checklist to Laravel 12 + Filament 4
-- [x] Development workflow, branch & PR rules
-- [x] Phased milestones with tasks and example commands
-- [x] QA/quality gates and acceptance criteria
-- [x] Minimal CI / local dev steps
+📋 PHASED IMPLEMENTATION COMMANDS
 
----
-
-## Goals (short)
-- Manage Redis connections from DB via Filament admin
-- Generate runtime Horizon supervisor configs per connection
-- Run and monitor queues across many Redis instances
-- Connection health checks, statistics and alerts
-- Secure credential storage and RBAC for admin users
-
----
-
-## Project Conventions
-- Branches: feature/*, fix/*, hotfix/*, upgrade/*
-- Main branch: `main` (protected). Merge via PR after code review and passing CI.
-- PR checklist: tests green, composer.lock updated, migrations included, docs updated, changelog entry.
-- Issue and milestone mapping: use GitHub Issues / Milestones per release (v1.0, v1.1...)
-
----
-
-## Minimal environment requirements
-- PHP 8.2+ (8.3 recommended)
-- Composer 2.2+
-- Node 18+ (if building frontend assets)
-- MySQL or PostgreSQL
-- Redis instances (for testing: separate local instances / Docker)
-
-Docker images and compose are in `compose/` for local dev — update Dockerfiles to PHP >= 8.2 when upgrading runtime.
-
----
-
-## High-level Phases & Deliverables (updated for Laravel 12 + Filament 4)
-
-Phase 0 — Prep & Upgrade (small, immediate)
-- Update `composer.json` constraints to Laravel 12 and Filament 4
-- Ensure PHP runtime updated in Dockerfile / server images
-- Create branch: `upgrade/laravel-12-filament-4`
-- Deliverable: repo compiles and `php artisan` runs locally
-
-Phase 1 — Core (v1.0) — Redis management + Horizon integration
-- RedisConnection model + Filament Resource
-- DynamicRedisServiceProvider to register DB-driven Redis connections at runtime
-- ConfigGeneratorService to write validated `config/horizon.php` or supply runtime supervisors
-- Filament admin: CRUD, test connection action
-- Deliverable: Admin can add connections and Horizon monitors their queues (manual restart ok)
-
-Phase 2 — Monitoring & Health (v1.1)
-- `CheckRedisHealth` scheduled command and `redis_health_logs` migration
-- QueueStats service and Filament widgets
-- Notifications for down/failed states
-- Deliverable: Health dashboard and alerts
-
-Phase 3 — Security & Teams (v1.2)
-- RBAC (Spatie) integration + Filament role assignment UI
-- Encrypted credential storage (model cast) and secrets best-practice
-- Backup/export/import for connection configs
-- Deliverable: Secure multi-role admin and import/export flows
-
-Phase 4 — Polish & Scale (v2.0 planned)
-- Performance tuning, caching strategy, supervisor orchestration for large connection sets
-- API for external integrations, multi-tenant support
-
----
-
-## Concrete Upgrade & Migration Checklist (copyable steps)
-
-1. Pre-checks
-- Ensure a clean git working tree and create branch:
+PHASE 1: Database & Models (Days 1-3)
 
 ```bash
-git checkout -b upgrade/laravel-12-filament-4
+# Command to AI Agent:
+"Implement Phase 1: Create all database migrations and Eloquent models according to the finalized schema. Use PHP 8.4 property hooks where appropriate and include proper type hints, relationships, and encrypted casts."
+
 ```
 
-- Check current PHP: `php -v` (update Dockerfile / runtime if <8.2)
+Files to Generate:
 
-2. Composer constraints (edit `composer.json`)
-- Set PHP constraint: `"php": ">=8.2"`
-- Set `laravel/framework` to `"^12.0"`
-- Set `filament/filament` to `"^4.0"`
-- Check other dependencies (spatie, horizon) for compatibility
+· database/migrations/2025_10_23_000001_create_applications_table.php
+· database/migrations/2025_10_23_000002_create_redis_connections_table.php
+· database/migrations/2025_10_23_000003_create_application_redis_connection_table.php
+· database/migrations/2025_10_23_000004_create_queue_configurations_table.php
+· database/migrations/2025_10_23_000005_create_redis_health_logs_table.php
+· database/migrations/2025_10_23_000006_create_activity_logs_table.php
 
-3. Update packages
+Models:
+
+· app/Models/Application.php
+· app/Models/RedisConnection.php
+· app/Models/ApplicationRedisConnection.php
+· app/Models/QueueConfiguration.php
+· app/Models/RedisHealthLog.php
+· app/Models/ActivityLog.php
+
+---
+
+PHASE 2: Filament Resources (Days 4-6)
 
 ```bash
-composer update --with-all-dependencies
-composer require filament/filament:"^4.0" --update-with-dependencies
-composer require laravel/horizon --update-with-dependencies
+# Command to AI Agent:
+"Implement Phase 2: Create Filament 4 resources with Livewire 3 components. Include forms with real-time validation, tables with filters, and custom actions for connection testing and health monitoring."
+
 ```
 
-If composer reports conflicts, run `composer why-not <pkg> <version>` to find blockers and address them one-by-one.
+Resources:
 
-4. Publish vendor configs and follow upgrade guides
+· app/Filament/Resources/ApplicationResource.php
+· app/Filament/Resources/RedisConnectionResource.php
+· app/Filament/Resources/QueueConfigurationResource.php
+
+Custom Pages:
+
+· app/Filament/Pages/Dashboard.php
+· app/Filament/Pages/HealthMonitor.php
+
+---
+
+PHASE 3: Dynamic Redis Integration (Days 7-10)
 
 ```bash
-php artisan vendor:publish --tag=filament-config
-php artisan vendor:publish --tag=horizon-config
+# Command to AI Agent:
+"Implement Phase 3: Create DynamicRedisManager service and Horizon supervisor generator. Implement runtime Redis connection registration and automated Horizon configuration with FrankenPHP worker mode optimizations."
+
 ```
 
-Follow the Laravel 12 upgrade guide and Filament 4 docs for breaking changes. Update code to remove deprecated helpers and adjust resource/widget APIs.
+Services:
 
-5. Code changes to expect
-- Filament resources/widgets APIs changed between v3 → v4: update fields, form & table definitions and widget `mount`/`render` lifecycles.
-- Update `DynamicRedisServiceProvider` to register connections using `config(['database.redis' => $connections])` or register RedisManager resolvers.
-- When writing `config/horizon.php`, ensure the `supervisors` array follows the Horizon version's schema.
+· app/Services/DynamicRedisManager.php
+· app/Services/HorizonSupervisorGenerator.php
+· app/Providers/DynamicRedisServiceProvider.php
 
-6. Restart workers
-- After config/horizon.php changes, run:
+Commands:
+
+· app/Console/Commands/HorizonRestart.php
+· app/Console/Commands/CheckRedisHealth.php
+
+---
+
+PHASE 4: Health Monitoring & Widgets (Days 11-13)
 
 ```bash
-php artisan horizon:terminate
-# supervisor / systemd will restart horizon process and new config will be read
+# Command to AI Agent:
+"Implement Phase 4: Create health monitoring system with real-time Filament widgets. Include dashboard widgets, health check commands, and notification system using PHP 8.4 features."
+
 ```
 
-7. Run migrations & tests
+Widgets:
+
+· app/Filament/Widgets/RedisHealthWidget.php
+· app/Filament/Widgets/QueueMetricsWidget.php
+· app/Filament/Widgets/ApplicationHealthWidget.php
+
+Notifications:
+
+· app/Notifications/RedisConnectionDown.php
+
+---
+
+PHASE 5: Security & RBAC (Days 14-15)
 
 ```bash
-php artisan migrate
-php artisan test
+# Command to AI Agent:
+"Implement Phase 5: Integrate Spatie Permission with Filament 4. Create policies, role seeding, and audit logging with proper encryption for credentials."
+
+```
+
+Security:
+
+· app/Policies/RedisConnectionPolicy.php
+· app/Policies/ApplicationPolicy.php
+· database/seeders/RolePermissionSeeder.php
+
+---
+
+🗃️ FINALIZED DATABASE SCHEMA
+
+Core Tables Structure:
+
+1. applications
+
+```php
+Schema::create('applications', function (Blueprint $table) {
+    $table->id();
+    $table->string('name');
+    $table->string('slug')->unique();
+    $table->text('description')->nullable();
+    $table->string('color', 7)->default('#3B82F6');
+    $table->string('icon', 50)->nullable();
+    $table->boolean('is_active')->default(true);
+    $table->json('metadata')->nullable();
+    $table->timestamps();
+    $table->softDeletes();
+});
+
+```
+
+1. redis_connections (with PHP 8.4 encryption)
+
+```php
+Schema::create('redis_connections', function (Blueprint $table) {
+    $table->id();
+    $table->string('name')->unique();
+    $table->string('host');
+    $table->unsignedInteger('port')->default(6379);
+    $table->text('password')->nullable(); // Encrypted via property hook
+    $table->unsignedTinyInteger('database')->default(0);
+    $table->json('options')->nullable();
+    $table->boolean('is_active')->default(true);
+    $table->string('health_status', 20)->nullable();
+    $table->timestamp('last_health_check_at')->nullable();
+    $table->text('last_error')->nullable();
+    $table->string('environment', 50)->default('production');
+    $table->string('region', 50)->nullable();
+    $table->string('provider', 50)->nullable();
+    $table->text('notes')->nullable();
+    $table->timestamps();
+    $table->softDeletes();
+});
+
+```
+
+1. application_redis_connection (Pivot)
+
+```php
+Schema::create('application_redis_connection', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('application_id')->constrained()->cascadeOnDelete();
+    $table->foreignId('redis_connection_id')->constrained()->cascadeOnDelete();
+    $table->boolean('is_primary')->default(false);
+    $table->unsignedTinyInteger('priority')->default(10);
+    $table->boolean('is_active')->default(true);
+    $table->timestamp('last_used_at')->nullable();
+    $table->timestamps();
+    $table->unique(['application_id', 'redis_connection_id']);
+});
+
+```
+
+1. queue_configurations (Horizon Integration)
+
+```php
+Schema::create('queue_configurations', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('application_id')->constrained()->cascadeOnDelete();
+    $table->foreignId('redis_connection_id')->constrained()->cascadeOnDelete();
+    $table->json('queue_names');
+    $table->string('balance_strategy', 20)->default('auto');
+    $table->unsignedTinyInteger('min_processes')->default(1);
+    $table->unsignedTinyInteger('max_processes')->default(10);
+    $table->unsignedTinyInteger('tries')->default(3);
+    $table->unsignedInteger('timeout')->default(60);
+    $table->unsignedInteger('memory')->default(128);
+    $table->boolean('is_active')->default(true);
+    $table->timestamps();
+    $table->unique(['application_id', 'redis_connection_id']);
+});
+
+```
+
+1. redis_health_logs (Monitoring)
+
+```php
+Schema::create('redis_health_logs', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('redis_connection_id')->constrained()->cascadeOnDelete();
+    $table->string('status', 20);
+    $table->decimal('latency_ms', 8, 2)->nullable();
+    $table->text('error_message')->nullable();
+    $table->unsignedInteger('memory_used_mb')->nullable();
+    $table->unsignedInteger('connected_clients')->nullable();
+    $table->unsignedBigInteger('keys_count')->nullable();
+    $table->json('metadata')->nullable();
+    $table->timestamp('checked_at');
+    $table->timestamps();
+});
+
 ```
 
 ---
 
-## Implementation details (contract + patterns)
+🔧 FRANKENPHP-SPECIFIC OPTIMIZATIONS
 
-DynamicRedisServiceProvider
-- Contract:
-  - Input: `RedisConnection` DB records (host, port, password, tls, options, name)
-  - Output: entries available under `config('database.redis')` as named connections
-  - Error modes: invalid/unauthorized connection — surface via connection test (Artisan command / UI action)
+Worker Mode Configuration
 
-- Implementation notes:
-  - Use model casts to encrypt passwords at rest: `$casts = ['password' => 'encrypted'];`
-  - Load connections in `register()` and merge into existing config. Avoid relying solely on `config:cache` for dynamic parts.
+```php
+// config/frankenphp.php
+return [
+    'worker' => [
+        'max_requests' => 1000,
+        'memory_limit' => '512M',
+        'persistent_connections' => [
+            'redis' => true,
+            'database' => true,
+        ]
+    ]
+];
 
-Horizon config generation
-- Use `ConfigGeneratorService` to produce a validated `config/horizon.php` array and write atomically (write to temp file then move).
-- After writing, call `php artisan horizon:terminate` so running horizon picks up new supervisors.
+```
 
-Health & Scheduler
-- `CheckRedisHealth` command: ping connections, measure latency, store logs in `redis_health_logs` table and emit events for alerts.
-- Schedule in `app/Console/Kernel.php` with a configurable interval.
+PHP 8.4 Property Hooks Implementation
 
-Security
-- Store Redis credentials encrypted at rest using Laravel encryption casting.
-- Limit Filament admin routes by roles/permissions (Spatie).
-- Avoid printing secrets in logs.
+```php
+class RedisConnection extends Model
+{
+    public string $password {
+        set {
+            // PHP 8.4 property hook for automatic encryption
+            $this->attributes['password'] = encrypt($value);
+        }
+        get {
+            return decrypt($this->attributes['password']);
+        }
+    }
+}
+
+```
 
 ---
 
-## Tasks, Example Commands and Files to Create
-
-Immediate dev tasks (small PRs)
-- [ ] Add encrypted cast to `RedisConnection` model
-  - edit `app/Models/RedisConnection.php` -> `$casts = ['password' => 'encrypted'];`
-
-- [ ] Scaffold health command + migration
+🎯 IMMEDIATE START COMMAND
 
 ```bash
-php artisan make:command CheckRedisHealth
-php artisan make:model RedisHealthLog -m
+# Command to AI Agent:
+"BEGIN IMPLEMENTATION: Start with Phase 1 - Database & Models. Create all migrations and models using the finalized schema above. Use PHP 8.4 property hooks for encrypted fields and include proper type hints, relationships, and FrankenPHP-optimized connection handling."
+
+# Expected first files:
+1. Create applications table migration and model
+2. Create redis_connections table migration with encrypted password field using PHP 8.4 property hooks
+3. Create pivot table migration and model
+4. Create queue_configurations table migration and model
+5. Create health logs table migration and model
+6. Create activity logs table migration and model
+
 ```
 
-Files:
-- `app/Console/Commands/CheckRedisHealth.php`
-- `database/migrations/xxxx_create_redis_health_logs_table.php`
-- `app/Models/RedisHealthLog.php`
-- `app/Filament/Widgets/RedisHealthWidget.php`
-
-- [ ] Horizon config generator
-
-Files:
-- `app/Services/ConfigGeneratorService.php`
-- `app/Providers/DynamicRedisServiceProvider.php` (ensure provider registered in `config/app.php`)
-
-- [ ] Filament resources & widgets (update for v4 if migrating)
-
 ---
 
-## QA / Quality Gates (run on PRs and before merging to main)
-- Build & basic local smoke
-  - composer install (no errors)
-  - php artisan migrate --env=testing
-  - php artisan serve (sanity)
+📊 SUCCESS METRICS
 
-- Tests
-  - Unit tests: `php artisan test --testsuite=Unit`
-  - Feature tests: `php artisan test --testsuite=Feature`
-
-- Static checks (if configured)
-  - php -l for syntax, phpstan/psalm if available
-
-- Acceptance criteria for a release PR:
-  - All tests pass
-  - No composer conflicts
-  - Migrations present and reviewed
-  - Filament UI renders and basic CRUD for RedisConnection works
-  - Horizon loads generated supervisors after `horizon:terminate`
-
----
-
-## CI / Pipeline (minimal)
-- Steps to run on PRs:
-  1. Checkout
-  2. composer install --no-interaction --prefer-dist
-  3. Setup .env.testing from template
-  4. php artisan key:generate
-  5. php artisan migrate --env=testing --force
-  6. php artisan test
-
-Add caching for composer and node_modules to speed runs.
-
----
-
-## Project Management Tips
-- Make small PRs scoped to a single behavior (e.g., cast + migration, provider + service, Filament resource changes).
-- Create an issue for each feature and link PRs to issues.
-- Keep upgrade work in `upgrade/*` branches and review package conflicts in isolation.
-
----
-
-## Timeline (suggested)
-- Week 0 (2–3 days): Prep + composer updates + PHP runtime updates
-- Week 1 (5 days): Core features + DynamicRedisServiceProvider + Filament CRUD
-- Week 2 (5 days): Horizon config generator + basic health command + UI widgets
-- Week 3 (5 days): Notifications + RBAC + Export/Import
-- Week 4 (buffer + polish): Tests, docs, deploy to staging
-
-Adjust based on team size and availability.
-
----
-
-## Next actionable choices (pick one and I can implement it)
-1. I will scan the repository for current `composer.json` and installed versions and create a precise composer.json diff + commands to run.
-2. I will scaffold `CheckRedisHealth` command, migration, and the `RedisHealthLog` model.
-3. I will implement a `DynamicRedisServiceProvider` skeleton and `ConfigGeneratorService` to safely write horizon config and trigger reload.
-4. I will perform the composer upgrade in an `upgrade/laravel-12-filament-4` branch and attempt to run tests and fix compatibility issues.
-
-Tell me which one to run next and I will execute it.
-
----
-
-## Change log
-- 2025-10-19: Upgraded plan to target Laravel 12 and Filament 4; added concrete upgrade/migration checklist, QA gates, and next actionable tasks.
-
----
-
-<small>Keep this file as the authoritative development plan and update it when milestones or constraints change.</small>
+· Performance: Health checks complete in < 30s for 100 connections
+· Reliability: 99.9% uptime for monitoring system
+· Security: Zero credential exposure in logs/UI
+· Usability: Operators can manage connections without developer intervention
+· Integration: Automated Horizon restarts work flawlessly
