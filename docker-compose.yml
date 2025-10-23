@@ -5,15 +5,8 @@ services:
       context: .
       dockerfile: compose/frankenphp/Dockerfile
       target: production
-    command: >
-      frankenphp php-cli
-      artisan octane:frankenphp
-      --host=0.0.0.0
-      --port=80
-      --workers=6
-      --max-requests=10000
     ports:
-      - "80:80"
+      - "80:8080"
     tmpfs:
       - /tmp/opcache:size=1G
       - /app/bootstrap/cache:rw,mode=1777,size=512M
@@ -30,9 +23,9 @@ services:
       # Application
       APP_ENV: production
       APP_DEBUG: false
-      APP_KEY: ${APP_KEY:-base64:32}
+      APP_KEY: ${APP_KEY:-base64:32characterkeyherepleasereplaceme=}
       LOG_LEVEL: warning
-      LOG_CHANNEL: single
+      LOG_CHANNEL: stderr
       # Database
       DB_CONNECTION: mysql
       DB_HOST: mysql
@@ -42,6 +35,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-secret}
       # Cache
       CACHE_DRIVER: redis
+      CACHE_PREFIX: ${CACHE_PREFIX:-laravel_cache}
       SESSION_DRIVER: redis
       QUEUE_CONNECTION: redis
       BROADCAST_DRIVER: redis
@@ -56,16 +50,16 @@ services:
       REDIS_QUEUE_DB: 3
       # Octane
       OCTANE_SERVER: frankenphp
-      OCTANE_WORKERS: 6
-      OCTANE_TASK_WORKERS: 3
-      OCTANE_MAX_REQUESTS: 10000
-      OCTANE_WATCH: false
+      # Views cache location
+      VIEW_COMPILED_PATH: /tmp/views
+      # Ensure no file permission issues
+      COMPOSER_ALLOW_SUPERUSER: 1
     healthcheck:
-      test: ["CMD", "curl", "-f", "-s", "-o", "/dev/null", "http://localhost/health"]
+      test: ["CMD", "curl", "-f", "-s", "-o", "/dev/null", "http://localhost:8080/up"]
       interval: 15s
       timeout: 5s
-      retries: 2
-      start_period: 30s
+      retries: 3
+      start_period: 45s
     networks:
       - app-network
 

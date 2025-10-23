@@ -1,6 +1,6 @@
 # Multi-stage build for better optimization
 FROM composer:2 AS composer
-FROM dunglas/frankenphp:1.3-php8.3-alpine AS base
+FROM dunglas/frankenphp:1.7-php8.4-alpine AS base
 
 # Build stage
 FROM base AS builder
@@ -20,7 +20,7 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp && \
     docker-php-ext-install -j$(nproc) \
         bcmath exif gd intl opcache pcntl \
         pdo_mysql pdo_pgsql pdo_sqlite sodium zip && \
-    pecl install redis-6.0.2 apcu-5.1.23 && \
+    pecl install redis apcu && \
     docker-php-ext-enable redis apcu
 
 # Production stage
@@ -34,7 +34,7 @@ RUN apk add --no-cache \
     curl git unzip tini \
     libzip libpng libjpeg-turbo freetype libwebp \
     icu libsodium libxml2 oniguruma \
-    postgresql-libs sqlite
+    postgresql-libs sqlite libcap
 
 # Copy PHP extensions from builder
 COPY --from=builder /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
@@ -51,9 +51,9 @@ RUN addgroup -g ${GID} appuser && \
 WORKDIR /app
 
 # Copy composer files first for better layer caching
-COPY --chown=${UID}:${GID} src/composer.json src/composer.* ./
+COPY --chown=${UID}:${GID} src/composer.* ./
 
-# Install dependencies
+# Install dependencies as root to avoid permission issues
 RUN composer install \
 #    --no-dev \
     --optimize-autoloader \
@@ -66,25 +66,33 @@ RUN composer install \
 # Copy application code
 COPY --chown=${UID}:${GID} src/ ./
 
-# Optimize Laravel
-RUN php artisan config:cache && \
-    php artisan route:cache && \
-    php artisan view:cache && \
-    php artisan event:cache
-
-# Set permissions
-RUN chown -R ${UID}:${GID} storage bootstrap/cache && \
+# Create necessary directories with proper permissions
+RUN mkdir -p storage/framework/{cache,sessions,views,testing} \
+    storage/logs \
+    bootstrap/cache && \
+    chown -R ${UID}:${GID} storage bootstrap/cache && \
     chmod -R 775 storage bootstrap/cache
 
+# Grant capability to bind to privileged ports (optional, if you need port 80)
+# RUN setcap 'cap_net_bind_service=+ep' /usr/local/bin/frankenphp
+
+# Optimize Laravel for production
+RUN php artisan config:cache || true && \
+    php artisan route:cache || true && \
+    php artisan view:cache || true && \
+    chown -R ${UID}:${GID} bootstrap/cache
+
+# Switch to appuser
 USER appuser
 
-EXPOSE 80
+# Use non-privileged port
+EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost/health || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=45s --retries=3 \
+    CMD curl -f http://localhost:8080/up || exit 1
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["frankenphp", "php-cli", \
     "artisan", "octane:frankenphp", \
-    "--host=0.0.0.0", "--port=80", \
+    "--host=0.0.0.0", "--port=8080", \
     "--workers=4", "--max-requests=5000"]
