@@ -28,28 +28,28 @@
 ## Phase 3: Dynamic Horizon UI
 
 ### Configuration
-- [ ] Publish Horizon configuration file
+- [x] Publish Horizon configuration file
   ```bash
   php artisan vendor:publish --tag=horizon-config
   php artisan vendor:publish --tag=horizon-assets
   ```
 
 ### Core Implementation
-- [ ] Create HorizonDashboard Filament page
-  - [ ] Implement application dropdown selector
-  - [ ] Implement dynamic Redis connection dropdown (filtered by application)
-  - [ ] Add "Launch Horizon" button
-  - [ ] Store selected connection in session
+- [x] Create HorizonDashboard Filament page
+  - [x] Implement application dropdown selector
+  - [x] Implement dynamic Redis connection dropdown (filtered by application)
+  - [x] Add "Launch Horizon" button
+  - [x] Store selected connection in session
 
-- [ ] Create DynamicHorizonMiddleware
-  - [ ] Retrieve selected connection from session
-  - [ ] Dynamically configure Redis connection
-  - [ ] Set Horizon to use dynamic connection
-  - [ ] Handle missing connection gracefully
+- [x] Create DynamicHorizonMiddleware
+  - [x] Retrieve selected connection from session
+  - [x] Dynamically configure Redis connection
+  - [x] Set Horizon to use dynamic connection
+  - [x] Handle missing connection gracefully
 
-- [ ] Update routes
-  - [ ] Add middleware to Horizon routes
-  - [ ] Configure Horizon path
+- [x] Update routes
+  - [x] Add middleware to Horizon routes
+  - [x] Configure Horizon path
 
 ### Testing
 - [ ] Test application selection

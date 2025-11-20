@@ -30,7 +30,9 @@ RUN apk update && apk add --no-cache \
     freetype-dev \
     libwebp-dev \
     libxpm-dev \
-    icu-dev
+    icu-dev \
+    oniguruma-dev \
+    libxml2-dev
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-xpm \
@@ -42,7 +44,9 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-x
     exif \
     sockets \
     intl \
-    pcntl
+    pcntl \
+    mbstring \
+    xml
 
 # Install Redis extension
 RUN pecl install redis && docker-php-ext-enable redis

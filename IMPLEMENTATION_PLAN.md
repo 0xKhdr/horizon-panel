@@ -57,25 +57,35 @@ Create a custom Filament page with:
   - Stores selected connection ID in session
   - Redirects to `/horizon` with dynamic configuration
 
+**v4 Best Practices**:
+- Use `Heroicon::CpuChip` for navigation icon
+- Delegate form logic to `HorizonDashboardForm` class
+
+#### [NEW] [HorizonDashboardForm.php](file:///var/www/html/afa/up/horizon-panel/app/Filament/Pages/Schemas/HorizonDashboardForm.php)
+
 **Key Features**:
 ```php
-// Form with cascading dropdowns
-Select::make('application_id')
-    ->label('Application')
-    ->options(Application::pluck('name', 'id'))
-    ->reactive()
-    ->afterStateUpdated(fn ($set) => $set('redis_connection_id', null));
+public static function configure(Schema $schema): Schema
+{
+    return $schema->components([
+        Select::make('application_id')
+            ->label('Application')
+            ->options(Application::pluck('name', 'id'))
+            ->reactive()
+            ->afterStateUpdated(fn ($set) => $set('redis_connection_id', null)),
 
-Select::make('redis_connection_id')
-    ->label('Redis Connection')
-    ->options(function (callable $get) {
-        $applicationId = $get('application_id');
-        if (!$applicationId) return [];
-        
-        return Application::find($applicationId)
-            ->redisConnections()
-            ->pluck('name', 'id');
-    });
+        Select::make('redis_connection_id')
+            ->label('Redis Connection')
+            ->options(function (callable $get) {
+                $applicationId = $get('application_id');
+                if (!$applicationId) return [];
+                
+                return Application::find($applicationId)
+                    ->redisConnections()
+                    ->pluck('name', 'id');
+            }),
+    ]);
+}
 ```
 
 #### [NEW] [DynamicHorizonMiddleware.php](file:///var/www/html/afa/up/horizon-panel/app/Http/Middleware/DynamicHorizonMiddleware.php)
@@ -387,6 +397,8 @@ Update with:
 Deployment guide covering:
 - Server requirements
 - Docker Compose setup
+-    // Navigation Configuration
+    protected static string|\BackedEnum|null $navigationIcon = Heroicon::ServerStack; // MUST match parent signature (BackedEnum)res
 - Environment configuration
 - Database setup and migrations
 - SSL/TLS configuration

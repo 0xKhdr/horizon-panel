@@ -17,6 +17,6 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withProviders([
-        \App\Providers\AdminPanelProvider::class,
+        //
     ])
     ->create();
