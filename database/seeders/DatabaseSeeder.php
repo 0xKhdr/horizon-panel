@@ -15,11 +15,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        if (!User::query()->whereEmail($email = 'admin@horizon.local')->exists()) {
+            User::factory()->create([
+                'name' => 'Admin',
+                'email' => $email,
+            ]);
+        }
     }
 }

@@ -3,10 +3,17 @@ services:
     container_name: app
     build:
       context: .
-      dockerfile: compose/nginx/Dockerfile
+      dockerfile: compose/frankenphp/Dockerfile
       target: production
+    command: >
+      frankenphp php-cli
+      artisan octane:frankenphp
+      --host=0.0.0.0
+      --port=8080
+      --workers=auto
+      --max-requests=5000
     ports:
-      - "8080:8080"
+      - "80:8080"
     tmpfs:
       - /tmp/opcache:size=1G
       - /app/bootstrap/cache:rw,mode=1777,size=512M
@@ -15,7 +22,7 @@ services:
     volumes:
       - ./:/app:delegated
       - ./storage/logs:/app/storage/logs:delegated
-      - ./compose/nginx/php.ini:/usr/local/etc/php/99-custom.ini:ro
+      - ./compose/frankenphp/php.ini:/usr/local/etc/php/99-custom.ini:ro
     depends_on:
       mysql:
         condition: service_healthy
@@ -51,6 +58,8 @@ services:
       REDIS_CACHE_DB: 2
       REDIS_SESSION_DB: 1
       REDIS_QUEUE_DB: 3
+      # Octane
+      OCTANE_SERVER: frankenphp
       # Views cache location
       VIEW_COMPILED_PATH: /tmp/views
       # Ensure no file permission issues

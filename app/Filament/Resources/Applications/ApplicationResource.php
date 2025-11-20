@@ -13,8 +13,6 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ApplicationResource extends Resource
 {
@@ -22,9 +20,7 @@ class ApplicationResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static string|null|\UnitEnum $navigationGroup = 'Management';
-
-    protected static ?int $navigationSort = 1;
+    protected static ?string $recordTitleAttribute = 'Application';
 
     public static function form(Schema $schema): Schema
     {
@@ -50,18 +46,5 @@ class ApplicationResource extends Resource
             'create' => CreateApplication::route('/create'),
             'edit' => EditApplication::route('/{record}/edit'),
         ];
-    }
-
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::where('is_active', true)->count();
-    }
-
-    public static function getRecordRouteBindingEloquentQuery(): Builder
-    {
-        return parent::getRecordRouteBindingEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
     }
 }

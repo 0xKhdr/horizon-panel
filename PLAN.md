@@ -1,291 +1,84 @@
-🚀 Finalized Implementation Plan - Laravel Dynamic Redis Horizon Manager
+# Simplified Plan: Dynamic Horizon Panel
 
-🎯 Tech Stack Finalized
-
-· Laravel 12 with modern syntax
-· FrankenPHP (Worker Mode) for high performance
-· PHP 8.4 with property hooks
-· Filament 4 with Livewire 3
-· Redis 7+ & Horizon 5
-· Spatie Permission for RBAC
+## Objective
+Create a simple admin panel to manage Redis connections, group them by application, and use them to dynamically launch the Laravel Horizon UI.
 
 ---
 
-📋 PHASED IMPLEMENTATION COMMANDS
+## Phase 1: Database and Models
 
-PHASE 1: Database & Models (Days 1-3)
+### Description
+Define the database schema and Eloquent models for applications and Redis connections, establishing the relationships between them.
 
-```bash
-# Command to AI Agent:
-"Implement Phase 1: Create all database migrations and Eloquent models according to the finalized schema. Use PHP 8.4 property hooks where appropriate and include proper type hints, relationships, and encrypted casts."
+### Tables
+1.  **`applications`**
+    *   `id` (PK)
+    *   `name` (string)
+    *   `created_at`, `updated_at`
 
-```
+2.  **`redis_connections`**
+    *   `id` (PK)
+    *   `name` (string, unique)
+    *   `host` (string)
+    *   `port` (integer, default 6379)
+    *   `password` (text, nullable, encrypted)
+    *   `database` (unsigned tiny integer, default 0)
+    *   `created_at`, `updated_at`
 
-Files to Generate:
+3.  **`application_redis_connection` (Pivot Table)**
+    *   `id` (PK)
+    *   `application_id` (FK to `applications`)
+    *   `redis_connection_id` (FK to `redis_connections`)
+    *   `created_at`, `updated_at`
+    *   Unique constraint on `application_id` and `redis_connection_id`
 
-· database/migrations/2025_10_23_000001_create_applications_table.php
-· database/migrations/2025_10_23_000002_create_redis_connections_table.php
-· database/migrations/2025_10_23_000003_create_application_redis_connection_table.php
-· database/migrations/2025_10_23_000004_create_queue_configurations_table.php
-· database/migrations/2025_10_23_000005_create_redis_health_logs_table.php
-· database/migrations/2025_10_23_000006_create_activity_logs_table.php
-
-Models:
-
-· app/Models/Application.php
-· app/Models/RedisConnection.php
-· app/Models/ApplicationRedisConnection.php
-· app/Models/QueueConfiguration.php
-· app/Models/RedisHealthLog.php
-· app/Models/ActivityLog.php
-
----
-
-PHASE 2: Filament Resources (Days 4-6)
-
-```bash
-# Command to AI Agent:
-"Implement Phase 2: Create Filament 4 resources with Livewire 3 components. Include forms with real-time validation, tables with filters, and custom actions for connection testing and health monitoring."
-
-```
-
-Resources:
-
-· app/Filament/Resources/ApplicationResource.php
-· app/Filament/Resources/RedisConnectionResource.php
-· app/Filament/Resources/QueueConfigurationResource.php
-
-Custom Pages:
-
-· app/Filament/Pages/Dashboard.php
-· app/Filament/Pages/HealthMonitor.php
+### Eloquent Models
+*   `app/Models/Application.php`
+*   `app/Models/RedisConnection.php`
 
 ---
 
-PHASE 3: Dynamic Redis Integration (Days 7-10)
+## Phase 2: Admin Panel for Management (CRUD)
 
-```bash
-# Command to AI Agent:
-"Implement Phase 3: Create DynamicRedisManager service and Horizon supervisor generator. Implement runtime Redis connection registration and automated Horizon configuration with FrankenPHP worker mode optimizations."
+### Description
+Implement the admin panel using Laravel Filament to provide full CRUD functionality for Applications and Redis Connections.
 
-```
+### Filament Resources
+1.  **`ApplicationResource`**
+    *   Form fields: `name`
+    *   Table columns: `name`
+    *   Ability to attach/detach `RedisConnection` records (e.g., using a multi-select field).
 
-Services:
-
-· app/Services/DynamicRedisManager.php
-· app/Services/HorizonSupervisorGenerator.php
-· app/Providers/DynamicRedisServiceProvider.php
-
-Commands:
-
-· app/Console/Commands/HorizonRestart.php
-· app/Console/Commands/CheckRedisHealth.php
+2.  **`RedisConnectionResource`**
+    *   Form fields: `name`, `host`, `port`, `password`, `database`.
+    *   Table columns: `name`, `host`, `port`, `database`.
+    *   Ability to attach/detach `Application` records.
 
 ---
 
-PHASE 4: Health Monitoring & Widgets (Days 11-13)
+## Phase 3: Dynamic Horizon UI
 
-```bash
-# Command to AI Agent:
-"Implement Phase 4: Create health monitoring system with real-time Filament widgets. Include dashboard widgets, health check commands, and notification system using PHP 8.4 features."
+### Description
+Create a Filament page that allows users to select a configured Redis connection and then dynamically launch the Laravel Horizon UI using that specific connection.
 
-```
+### Components
+1.  **`app/Filament/Pages/HorizonDashboard.php`**
+    *   A Filament custom page.
+    *   Contains a form with a dropdown to select an `Application`.
+    *   A second dropdown, dynamically populated, to select a `RedisConnection` associated with the chosen `Application`.
+    *   A "Launch Horizon" button.
 
-Widgets:
+2.  **Dynamic Configuration Logic**
+    *   Upon selecting a connection and clicking "Launch", the system will:
+        *   Store the selected `redis_connection_id` (e.g., in the session).
+        *   Dynamically register the selected Redis connection details into Laravel's `config('database.redis')`.
+        *   Dynamically set Laravel Horizon's `use` configuration to point to this newly registered connection (e.g., `config('horizon.use', 'dynamic_horizon_connection')`).
+    *   Redirect to the standard `/horizon` route, which will now use the dynamically configured Redis connection.
 
-· app/Filament/Widgets/RedisHealthWidget.php
-· app/Filament/Widgets/QueueMetricsWidget.php
-· app/Filament/Widgets/ApplicationHealthWidget.php
-
-Notifications:
-
-· app/Notifications/RedisConnectionDown.php
-
----
-
-PHASE 5: Security & RBAC (Days 14-15)
-
-```bash
-# Command to AI Agent:
-"Implement Phase 5: Integrate Spatie Permission with Filament 4. Create policies, role seeding, and audit logging with proper encryption for credentials."
-
-```
-
-Security:
-
-· app/Policies/RedisConnectionPolicy.php
-· app/Policies/ApplicationPolicy.php
-· database/seeders/RolePermissionSeeder.php
+3.  **Middleware (Optional but Recommended)**
+    *   A middleware to intercept requests to `/horizon` and apply the dynamic Redis/Horizon configuration based on the stored selection. This ensures Horizon always uses the correct connection.
 
 ---
 
-🗃️ FINALIZED DATABASE SCHEMA
-
-Core Tables Structure:
-
-1. applications
-
-```php
-Schema::create('applications', function (Blueprint $table) {
-    $table->id();
-    $table->string('name');
-    $table->string('slug')->unique();
-    $table->text('description')->nullable();
-    $table->string('color', 7)->default('#3B82F6');
-    $table->string('icon', 50)->nullable();
-    $table->boolean('is_active')->default(true);
-    $table->json('metadata')->nullable();
-    $table->timestamps();
-    $table->softDeletes();
-});
-
-```
-
-1. redis_connections (with PHP 8.4 encryption)
-
-```php
-Schema::create('redis_connections', function (Blueprint $table) {
-    $table->id();
-    $table->string('name')->unique();
-    $table->string('host');
-    $table->unsignedInteger('port')->default(6379);
-    $table->text('password')->nullable(); // Encrypted via property hook
-    $table->unsignedTinyInteger('database')->default(0);
-    $table->json('options')->nullable();
-    $table->boolean('is_active')->default(true);
-    $table->string('health_status', 20)->nullable();
-    $table->timestamp('last_health_check_at')->nullable();
-    $table->text('last_error')->nullable();
-    $table->string('environment', 50)->default('production');
-    $table->string('region', 50)->nullable();
-    $table->string('provider', 50)->nullable();
-    $table->text('notes')->nullable();
-    $table->timestamps();
-    $table->softDeletes();
-});
-
-```
-
-1. application_redis_connection (Pivot)
-
-```php
-Schema::create('application_redis_connection', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('application_id')->constrained()->cascadeOnDelete();
-    $table->foreignId('redis_connection_id')->constrained()->cascadeOnDelete();
-    $table->boolean('is_primary')->default(false);
-    $table->unsignedTinyInteger('priority')->default(10);
-    $table->boolean('is_active')->default(true);
-    $table->timestamp('last_used_at')->nullable();
-    $table->timestamps();
-    $table->unique(['application_id', 'redis_connection_id']);
-});
-
-```
-
-1. queue_configurations (Horizon Integration)
-
-```php
-Schema::create('queue_configurations', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('application_id')->constrained()->cascadeOnDelete();
-    $table->foreignId('redis_connection_id')->constrained()->cascadeOnDelete();
-    $table->json('queue_names');
-    $table->string('balance_strategy', 20)->default('auto');
-    $table->unsignedTinyInteger('min_processes')->default(1);
-    $table->unsignedTinyInteger('max_processes')->default(10);
-    $table->unsignedTinyInteger('tries')->default(3);
-    $table->unsignedInteger('timeout')->default(60);
-    $table->unsignedInteger('memory')->default(128);
-    $table->boolean('is_active')->default(true);
-    $table->timestamps();
-    $table->unique(['application_id', 'redis_connection_id']);
-});
-
-```
-
-1. redis_health_logs (Monitoring)
-
-```php
-Schema::create('redis_health_logs', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('redis_connection_id')->constrained()->cascadeOnDelete();
-    $table->string('status', 20);
-    $table->decimal('latency_ms', 8, 2)->nullable();
-    $table->text('error_message')->nullable();
-    $table->unsignedInteger('memory_used_mb')->nullable();
-    $table->unsignedInteger('connected_clients')->nullable();
-    $table->unsignedBigInteger('keys_count')->nullable();
-    $table->json('metadata')->nullable();
-    $table->timestamp('checked_at');
-    $table->timestamps();
-});
-
-```
-
----
-
-🔧 FRANKENPHP-SPECIFIC OPTIMIZATIONS
-
-Worker Mode Configuration
-
-```php
-// config/frankenphp.php
-return [
-    'worker' => [
-        'max_requests' => 1000,
-        'memory_limit' => '512M',
-        'persistent_connections' => [
-            'redis' => true,
-            'database' => true,
-        ]
-    ]
-];
-
-```
-
-PHP 8.4 Property Hooks Implementation
-
-```php
-class RedisConnection extends Model
-{
-    public string $password {
-        set {
-            // PHP 8.4 property hook for automatic encryption
-            $this->attributes['password'] = encrypt($value);
-        }
-        get {
-            return decrypt($this->attributes['password']);
-        }
-    }
-}
-
-```
-
----
-
-🎯 IMMEDIATE START COMMAND
-
-```bash
-# Command to AI Agent:
-"BEGIN IMPLEMENTATION: Start with Phase 1 - Database & Models. Create all migrations and models using the finalized schema above. Use PHP 8.4 property hooks for encrypted fields and include proper type hints, relationships, and FrankenPHP-optimized connection handling."
-
-# Expected first files:
-1. Create applications table migration and model
-2. Create redis_connections table migration with encrypted password field using PHP 8.4 property hooks
-3. Create pivot table migration and model
-4. Create queue_configurations table migration and model
-5. Create health logs table migration and model
-6. Create activity logs table migration and model
-
-```
-
----
-
-📊 SUCCESS METRICS
-
-· Performance: Health checks complete in < 30s for 100 connections
-· Reliability: 99.9% uptime for monitoring system
-· Security: Zero credential exposure in logs/UI
-· Usability: Operators can manage connections without developer intervention
-· Integration: Automated Horizon restarts work flawlessly
+## Next Steps
+Begin implementation with Phase 1: Database and Models.

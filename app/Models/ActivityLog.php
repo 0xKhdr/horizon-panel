@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
@@ -16,7 +18,7 @@ use Spatie\Activitylog\Models\Activity;
  * @property int|null $causer_id
  * @property array|null $properties
  * @property string|null $event
- * @property \Carbon\Carbon|null $created_at
+ * @property Carbon|null $created_at
  * @property-read Model|null $subject
  * @property-read Model|null $causer
  */
@@ -62,15 +64,15 @@ class ActivityLog extends Activity
     /**
      * Scope a query to only include logs for a specific event.
      */
-    public function scopeForEvent($query, string $event): void
+    public function scopeForEvent($query, string $event): Builder
     {
-        $query->where('event', $event);
+        return $query->where('event', $event);
     }
 
     /**
      * Scope a query to only include logs with a specific log name.
      */
-    public function scopeInLog($query, ...$logNames): \Illuminate\Database\Eloquent\Builder
+    public function scopeInLog($query, ...$logNames): Builder
     {
         return $query->whereIn('log_name', $logNames);
     }
