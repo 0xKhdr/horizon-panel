@@ -6,7 +6,6 @@ use App\Filament\Pages\Schemas\HorizonDashboardForm;
 use Filament\Actions\Action;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema;
 use Filament\Support\Exceptions\Halt;
@@ -42,9 +41,9 @@ class HorizonDashboard extends Page implements HasForms
     {
         try {
             $data = $this->form->getState();
-            
+
             Session::put('selected_redis_connection_id', $data['redis_connection_id']);
-            
+
             $this->redirect('/horizon');
         } catch (Halt $exception) {
             return;

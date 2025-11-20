@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        if (!User::query()->whereEmail($email = 'admin@horizon.local')->exists()) {
+        if (! User::query()->whereEmail($email = 'admin@horizon.local')->exists()) {
             User::factory()->create([
                 'name' => 'Admin',
                 'email' => $email,
